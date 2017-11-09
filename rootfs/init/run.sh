@@ -2,12 +2,13 @@
 
 set -e
 
-[ -z "$QUASSEL_HOST" ] && export QUASSEL_HOST=""
-[ -z "$QUASSEL_PORT" ] && export QUASSEL_PORT="4242"
-[ -z "$FORCE_DEFAULT" ] && export FORCE_DEFAULT="false"
-[ -z "$WEBSERVER_MODE" ] && export WEBSERVER_MODE="https"
+QUASSEL_HOST=${QUASSEL_HOST:-localhost}
+QUASSEL_PORT=${QUASSEL_PORT:-4242}
+FORCE_DEFAULT=${FORCE_DEFAULT:-false}
+WEBSERVER_MODE=${WEBSERVER_MODE:-https}
+PREFIX_PATH=${PREFIX_PATH:-''}
 
-PREFIX_PATH="/irc"
+# PREFIX_PATH="/irc"
 
 if [ ! -e ssl/key.pem ]
 then
