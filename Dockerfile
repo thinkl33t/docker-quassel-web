@@ -1,13 +1,11 @@
 
-FROM alpine:latest
+FROM alpine:3.7
 
-MAINTAINER Bodo Schulz <bodo@boone-schulz.de>
+EXPOSE 64080
 
 ENV \
-  ALPINE_MIRROR="mirror1.hs-esslingen.de/pub/Mirrors" \
-  ALPINE_VERSION="v3.6" \
   TERM=xterm \
-  BUILD_DATE="2017-10-27" \
+  BUILD_DATE="2017-12-22" \
   BUILD_TYPE="stable" \
   BUILD_VERSION="2.2.8" \
   QUASSEL_HOST=localhost \
@@ -16,37 +14,30 @@ ENV \
   WEBSERVER_MODE=http \
   WEBSERVER_PORT=64080
 
-EXPOSE 64080
-
 # ---------------------------------------------------------------------------------------
 
 RUN \
-  echo "http://${ALPINE_MIRROR}/alpine/${ALPINE_VERSION}/main"       > /etc/apk/repositories && \
-  echo "http://${ALPINE_MIRROR}/alpine/${ALPINE_VERSION}/community" >> /etc/apk/repositories && \
-  apk --quiet --no-cache update && \
-  apk --quiet --no-cache upgrade && \
-  apk --quiet --no-cache add \
-    nodejs-current \
-    nodejs-current-npm \
-    git \
+  apk update --quiet --no-cache && \
+  apk upgrade --quiet --no-cache && \
+  apk add --quiet --no-cache --virtual .build-deps \
+    build-base curl git python && \
+  apk add --quiet --no-cache \
+    nodejs \
+    nodejs-npm \
     openssl && \
   mkdir /data && \
   cd /data && \
   git clone https://github.com/magne4000/quassel-webserver.git && \
   cd quassel-webserver && \
-  #
-  # build stable packages
   if [ "${BUILD_TYPE}" == "stable" ] ; then \
     echo "switch to stable Tag v${BUILD_VERSION}" && \
     git checkout tags/${BUILD_VERSION} 2> /dev/null ; \
   fi && \
-  #
   npm install --production && \
-  find . -iname "*.md" -o -iname "*.markdown" -o -iname "LICENSE*"  | xargs -r rm
-
-RUN \
+  find . -type d -name "doc" -o -name "node_modules.old" -o -name "dist" -o -name "test" | xargs -r rm -rf && \
+  find . -type f -iname "*.md" -o -iname "*.markdown" -o -iname "LICENSE*" | xargs -r rm -f && \
   npm ls -gp --depth=0 | awk -F/node_modules/ '{print $2}' | grep -vE '^(npm|)$' | xargs -r npm -g rm && \
-  apk --quiet --purge del git && \
+  apk del --quiet .build-deps && \
   rm -rf \
     /tmp/* \
     /root/.n* \
