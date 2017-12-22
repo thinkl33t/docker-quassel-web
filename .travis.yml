@@ -1,0 +1,11 @@
+sudo: required
+
+services:
+  - docker
+
+install:
+  - docker build --tag bodsch/docker-quassel-web .
+  - docker run --detach --name quassel-web bodsch/docker-quassel-web
+
+script:
+  - docker ps | grep -q quassel-web
