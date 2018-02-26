@@ -9,3 +9,11 @@ install:
 
 script:
   - docker ps | grep -q quassel-web
+
+after_success:
+  - |
+    [ "${TRAVIS_BRANCH}" == "master" ] && curl \
+      --request POST \
+      --header "Content-Type: application/json"  \
+      --data '{"source_type":"Branch","source_name":"master"}' \
+      https://registry.hub.docker.com/u/bodsch/docker-quassel-web/trigger/${DOCKER_HUB_TOKEN}/
