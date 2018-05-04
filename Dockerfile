@@ -3,7 +3,7 @@ FROM alpine:3.7
 
 ENV \
   TERM=xterm \
-  BUILD_DATE="2018-01-26" \
+  BUILD_DATE="2018-05-04" \
   BUILD_TYPE="stable" \
   BUILD_VERSION="2.2.8" \
   QUASSEL_HOST=localhost \
