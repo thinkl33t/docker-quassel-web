@@ -3,17 +3,57 @@ sudo: required
 services:
   - docker
 
-install:
-  - docker build --tag bodsch/docker-quassel-web .
-  - docker run --detach --name quassel-web bodsch/docker-quassel-web
+env:
+  global:
+    - QUASSELWEB_VERSION=${QUASSELWEB_VERSION:-2.2.8}
+    - BUILD_DATE=$(date +"%Y-%m-%d")
+    - BUILD_TYPE=${QUASSELWEB_VERSION:-stable}
 
-script:
-  - docker ps | grep -q quassel-web
+jobs:
+  include:
+    - stage: build
+      script:
+        - make
 
-after_success:
-  - |
-    [ "${TRAVIS_BRANCH}" == "master" ] && curl \
-      --request POST \
-      --header "Content-Type: application/json"  \
-      --data '{"source_type":"Branch","source_name":"master"}' \
-      https://registry.hub.docker.com/u/bodsch/docker-quassel-web/trigger/${DOCKER_HUB_TOKEN}/
+    - stage: build and test
+      script:
+        - make
+        - make compose-file
+        - docker-compose build
+        - docker-compose up -d
+        - docker ps | grep -q quassel-web
+        - docker-compose kill
+        - docker-compose down
+
+    - stage: push latest docker image
+      script:
+        - make
+        - docker login -u="${DOCKER_USERNAME}" -p="${DOCKER_PASSWORD}"
+        - docker tag ${USER}/docker-quassel-web:latest ${DOCKER_USERNAME}/docker-docker-quassel-web:latest
+        - docker push ${DOCKER_USERNAME}/docker-docker-quassel-web:latest
+        - docker logout
+
+    - stage: push version docker image
+      script:
+        - make
+        - docker login -u="${DOCKER_USERNAME}" -p="${DOCKER_PASSWORD}"
+        - docker tag ${USER}/docker-quassel-web:latest ${DOCKER_USERNAME}/docker-docker-quassel-web:${QUASSELWEB_VERSION}
+        - docker push ${DOCKER_USERNAME}/docker-docker-quassel-web:${QUASSELWEB_VERSION}
+        - docker logout
+
+
+#install:
+#  - docker build --tag bodsch/docker-quassel-web .
+#  - docker run --detach --name quassel-web bodsch/docker-quassel-web
+#
+#script:
+#  - docker ps | grep -q quassel-web
+#
+#after_success:
+#  - |
+#    [ "${TRAVIS_BRANCH}" == "master" ] && curl \
+#      --request POST \
+#      --header "Content-Type: application/json"  \
+#      --data '{"source_type":"Branch","source_name":"master"}' \
+#      https://registry.hub.docker.com/u/bodsch/docker-quassel-web/trigger/${DOCKER_HUB_TOKEN}/
+#
