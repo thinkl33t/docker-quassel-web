@@ -1,0 +1,24 @@
+---
+version: '3.0'
+
+services:
+  quassel-web:
+    restart: always
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        - BUILD_DATE
+        - BUILD_VERSION
+        - BUILD_TYPE
+        - QUASSELWEB_VERSION
+    container_name: quassel-web
+    hostname: quassel-web
+    ports:
+      - 64080:64080
+    environment:
+      - QUASSEL_HOST
+      - QUASSEL_PORT
+      - FORCE_DEFAULT
+      - WEBSERVER_MODE
+      - PREFIX_PATH
