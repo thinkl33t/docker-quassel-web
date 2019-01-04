@@ -29,16 +29,16 @@ jobs:
       script:
         - make
         - docker login -u="${DOCKER_USERNAME}" -p="${DOCKER_PASSWORD}"
-        - docker tag ${USER}/docker-quassel-web:latest ${DOCKER_USERNAME}/docker-docker-quassel-web:latest
-        - docker push ${DOCKER_USERNAME}/docker-docker-quassel-web:latest
+        - docker tag ${USER}/quassel-web:latest ${DOCKER_USERNAME}/docker-quassel-web:latest
+        - docker push ${DOCKER_USERNAME}/docker-quassel-web:latest
         - docker logout
 
     - stage: push version docker image
       script:
         - make
         - docker login -u="${DOCKER_USERNAME}" -p="${DOCKER_PASSWORD}"
-        - docker tag ${USER}/docker-quassel-web:latest ${DOCKER_USERNAME}/docker-docker-quassel-web:${QUASSELWEB_VERSION}
-        - docker push ${DOCKER_USERNAME}/docker-docker-quassel-web:${QUASSELWEB_VERSION}
+        - docker tag ${USER}/quassel-web:latest ${DOCKER_USERNAME}/docker-quassel-web:${QUASSELWEB_VERSION}
+        - docker push ${DOCKER_USERNAME}/docker-quassel-web:${QUASSELWEB_VERSION}
         - docker logout
 
 
