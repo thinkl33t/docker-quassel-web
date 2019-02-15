@@ -2,28 +2,40 @@
 
 set -e
 
-export NODE_ENV=production
+. /init/output.sh
+
+export NODE_ENV=${NODE_ENV:-production}
 
 QUASSEL_HOST=${QUASSEL_HOST:-localhost}
 QUASSEL_PORT=${QUASSEL_PORT:-4242}
 FORCE_DEFAULT=${FORCE_DEFAULT:-false}
 WEBSERVER_MODE=${WEBSERVER_MODE:-http}
+WEBSERVER_PORT=${WEBSERVER_PORT:-64080}
 PREFIX_PATH=${PREFIX_PATH:-''}
 
 # PREFIX_PATH="/irc"
 
-if [[ "${WEBSERVER_MODE}" == "https" ]] && [[ ! -e ssl/key.pem ]]
-then
-  openssl \
-    req -x509 \
-    -newkey rsa:2048 \
-    -keyout ssl/key.pem \
-    -out ssl/cert.pem \
-    -nodes \
-    -subj "/C=GB/ST=London/L=London/O=Quassel Webserver/OU=Quassel Webserver/CN=quassel-webserver.com"
-fi
+create_certificate() {
 
-cat << EOF >> settings-user.js
+  # generate key
+  if [ ! -f ssl/key.pem ] || [ ! -f ssl/cert.pem ]
+  then
+    log_info "create certificate"
+
+    openssl \
+      req -x509 \
+      -newkey rsa:2048 \
+      -keyout ssl/key.pem \
+      -out ssl/cert.pem \
+      -nodes
+  fi
+}
+
+create_config() {
+
+  log_info "create settings-user.js"
+
+  cat << EOF > settings-user.js
 
 module.exports = {
   default: {
@@ -41,8 +53,37 @@ module.exports = {
 
 EOF
 
-# echo "module.exports = { default: { host: '$QUASSEL_HOST', port: $QUASSEL_PORT }, forcedefault: $FORCE_DEFAULT, prefixpath: '', theme: 'default'  };" > /data/quassel-webserver/settings.js
+}
 
-node app.js \
-  -m ${WEBSERVER_MODE} \
-  -p 64080
+run() {
+
+  create_certificate
+
+  create_config
+
+  if [ "${WEBSERVER_MODE}" = "https" ]
+  then
+    WEBSERVER_PORT=64443
+  fi
+
+#  Usage: app [options]
+#
+#    Options:
+#
+#      -h, --help            output usage information
+#      -V, --version         output the version number
+#      -c, --config <value>  Path to configuration file
+#      -s, --socket <path>   listen on local socket. If this option is set, --listen, --port and --mode are ignored
+#      -l, --listen <value>  listening address [0.0.0.0]
+#      -p, --port <value>    http(s) port to use [64080|64443]
+#      -m, --mode <value>    http mode (http|https) [https]
+
+  node app.js \
+    --version
+
+  node app.js \
+    --mode ${WEBSERVER_MODE} \
+    --port ${WEBSERVER_PORT}
+}
+
+run

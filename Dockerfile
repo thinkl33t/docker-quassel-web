@@ -1,5 +1,5 @@
 
-FROM alpine:3.8 as builder
+FROM alpine:3.9 as builder
 
 ARG VCS_REF
 ARG BUILD_DATE
@@ -27,15 +27,19 @@ RUN \
     nodejs-npm \
     nodejs \
     openssl \
-    python && \
-  mkdir /data && \
-  cd /data && \
+    python
+
+WORKDIR /data
+
+RUN \
   git clone https://github.com/magne4000/quassel-webserver.git && \
   cd quassel-webserver && \
   if [ "${BUILD_TYPE}" == "stable" ] ; then \
     echo "switch to stable Tag v${QUASSELWEB_VERSION}" && \
     git checkout tags/${QUASSELWEB_VERSION} 2> /dev/null ; \
-  fi && \
+  fi
+
+RUN \
   npm i -g npm && \
   npm i --package-lock-only && \
   npm install acorn && \
@@ -60,7 +64,7 @@ RUN \
 
 # ---------------------------------------------------------------------------------------
 
-FROM alpine:3.8
+FROM alpine:3.9
 
 RUN \
   apk update  --quiet --no-cache && \
@@ -78,7 +82,7 @@ COPY --from=builder /data/quassel-webserver /data/quassel-webserver
 
 COPY rootfs/ /
 
-VOLUME [ "/data/quassel-webserver" ]
+VOLUME ["/data/quassel-webserver/ssl"]
 WORKDIR /data/quassel-webserver
 
 CMD ["/init/run.sh"]

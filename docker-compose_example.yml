@@ -22,3 +22,4 @@ services:
       - FORCE_DEFAULT
       - WEBSERVER_MODE
       - PREFIX_PATH
+
