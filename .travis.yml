@@ -15,31 +15,30 @@ jobs:
       script:
         - make
 
-#    - stage: build and test
-#      script:
-#        - make
-#        - make compose-file
-#        - docker-compose build
-#        - docker-compose up -d
-#        - docker ps | grep -q quassel-web
-#        - docker-compose kill
-#        - docker-compose down
-#
-#    - stage: push latest docker image
-#      script:
-#        - make
-#        - docker login -u="${DOCKER_USERNAME}" -p="${DOCKER_PASSWORD}"
-#        - docker tag ${USER}/quassel-web:latest ${DOCKER_USERNAME}/docker-quassel-web:latest
-#        - docker push ${DOCKER_USERNAME}/docker-quassel-web:latest
-#        - docker logout
-#
-#    - stage: push version docker image
-#      script:
-#        - make
-#        - docker login -u="${DOCKER_USERNAME}" -p="${DOCKER_PASSWORD}"
-#        - docker tag ${USER}/quassel-web:latest ${DOCKER_USERNAME}/docker-quassel-web:${QUASSELWEB_VERSION}
-#        - docker push ${DOCKER_USERNAME}/docker-quassel-web:${QUASSELWEB_VERSION}
-#        - docker logout
+    - stage: build and test
+      script:
+        - make compose-file
+        - docker-compose build
+        - docker-compose up -d
+        - docker ps | grep -q quassel-web
+        - docker-compose kill
+        - docker-compose down
+
+    - stage: push latest docker image
+      script:
+        - make
+        - docker login -u="${DOCKER_USERNAME}" -p="${DOCKER_PASSWORD}"
+        - docker tag ${USER}/quassel-web:latest ${DOCKER_USERNAME}/docker-quassel-web:latest
+        - docker push ${DOCKER_USERNAME}/docker-quassel-web:latest
+        - docker logout
+
+    - stage: push version docker image
+      script:
+        - make
+        - docker login -u="${DOCKER_USERNAME}" -p="${DOCKER_PASSWORD}"
+        - docker tag ${USER}/quassel-web:latest ${DOCKER_USERNAME}/docker-quassel-web:${QUASSELWEB_VERSION}
+        - docker push ${DOCKER_USERNAME}/docker-quassel-web:${QUASSELWEB_VERSION}
+        - docker logout
 
 
 #install:

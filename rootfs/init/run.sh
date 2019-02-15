@@ -1,6 +1,7 @@
 #!/bin/sh
 
-set -e
+#set -e
+#set -x
 
 . /init/output.sh
 
@@ -13,9 +14,9 @@ WEBSERVER_MODE=${WEBSERVER_MODE:-http}
 WEBSERVER_PORT=${WEBSERVER_PORT:-64080}
 PREFIX_PATH=${PREFIX_PATH:-''}
 
-# PREFIX_PATH="/irc"
-
 create_certificate() {
+
+  mkdir ssl 2> /dev/null
 
   # generate key
   if [ ! -f ssl/key.pem ] || [ ! -f ssl/cert.pem ]
