@@ -81,6 +81,9 @@ RUN \
 
 FROM alpine:3.9
 
+ENV \
+  TZ='Europe/Berlin'
+
 COPY --from=builder /etc/profile.d/quassel-web.sh /etc/profile.d/quassel-web.sh
 COPY --from=builder /data/quassel-webserver       /data/quassel-webserver
 
@@ -88,10 +91,25 @@ RUN \
   . /etc/profile && \
   apk update  --quiet --no-cache && \
   apk upgrade --quiet --no-cache && \
+  apk add     --quiet --no-cache --virtual .build-deps \
+    shadow \
+    tzdata && \
   apk add --no-cache \
     ca-certificates \
     nodejs \
     openssl && \
+  cp "/usr/share/zoneinfo/${TZ}" /etc/localtime && \
+  echo "${TZ}" > /etc/localtime && \
+  /usr/sbin/useradd \
+    --user-group \
+    --shell /bin/false \
+    --comment "User for quassel web" \
+    --no-create-home \
+    --home-dir /data/quassel-webserver \
+    --uid 1000 \
+    quassel && \
+  chown -Rv quassel:quassel /data/quassel-webserver && \
+  apk del --quiet --purge .build-deps && \
   rm -rf \
     /tmp/* \
     /root/.n* \
@@ -99,8 +117,10 @@ RUN \
 
 COPY rootfs/ /
 
-VOLUME ["/data/quassel-webserver/ssl"]
+USER quassel
 WORKDIR /data/quassel-webserver
+
+VOLUME ["/data/quassel-webserver/ssl"]
 
 CMD ["/init/run.sh"]
 
