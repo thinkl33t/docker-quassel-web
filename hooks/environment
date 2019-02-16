@@ -2,7 +2,8 @@
 PORTS="
   --publish 64080:64080"
 
-VOLUMES=""
+VOLUMES="
+  --volume $(pwd)/web:/data/quassel-webserver/ssl"
 
 ENV="
   --env QUASSEL_HOST="localhost" \
