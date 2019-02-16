@@ -95,6 +95,7 @@ RUN \
     shadow \
     tzdata && \
   apk add --no-cache \
+    curl \
     ca-certificates \
     nodejs \
     openssl && \
@@ -127,6 +128,13 @@ CMD ["/init/run.sh"]
 # ---------------------------------------------------------------------------------------
 
 EXPOSE 64080 64443
+
+HEALTHCHECK \
+  --interval=10s \
+  --timeout=10s \
+  --retries=12 \
+  --start-period=10s \
+  CMD /init/health_check.sh
 
 LABEL \
   version=${BUILD_VERSION} \
