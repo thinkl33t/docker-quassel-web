@@ -75,8 +75,6 @@ RUN \
   find \
     . -type f -iname "yarn.lock" -delete && \
   find \
-    . -type f -iname "yarn.lock" -delete && \
-  find \
     . -type f -iname "*CONTRIBUTING*" -delete
 
 # ---------------------------------------------------------------------------------------
