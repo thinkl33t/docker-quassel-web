@@ -1,58 +1,36 @@
 sudo: required
-
 services:
-  - docker
-
+- docker
 env:
   global:
-    - QUASSELWEB_VERSION=${QUASSELWEB_VERSION:-2.2.8}
-    - BUILD_DATE=$(date +"%Y-%m-%d")
-    - BUILD_TYPE=${QUASSELWEB_VERSION:-stable}
-
+  - QUASSELWEB_VERSION=${QUASSELWEB_VERSION:-2.2.8}
+  - BUILD_DATE=$(date +"%Y-%m-%d")
+  - BUILD_TYPE=${QUASSELWEB_VERSION:-stable}
+  - secure: isZZ/75rTaE5g37J8uF5a6PZziKzhOWlT2XFoV77ubAAS9VMw1T09q7bVBOyAaHSwF60g4DIyBdZv0xJzAihb78zOPf2lYayiFc8nKftDbr/IiSJ1aWMQQ5kno6ZdSMRLBD/Cr1NSIhsn242/q1N9Ua+LVp1gAobaYmGRmOTQglOdGtse/ewdojiolAt+8OGqVUhGHFRR0SBRSFD3RR7Uojfm5cdFWWmlhQzEycnKcvppCCTbHJ5lRRrzY/rnfHJYXOeDyy65fEjKPm3/Glwk8iA1oLQkTMP5+CfGqYdVNXFWSoNsjYHQwh3Hidak9UhcoIY3CKT4dFEywAJL+zNtt65/W+PEkRiVvYqu7a69hw8tysik+IjG7mOlXr3Zv9NVgZQ1TPak1DJmIEihDRo6bXyqAtMn8T3Po5cHdZxuuz7g6nDyQJxiSRmDy46ipWth9Dcc5EAAYPPUNCPouEPWHrDaHAqBU0SLpFhWDi61DMQmAKiHnrasowHw+hv9qsucvR9nKEG/87UKEnlnpNNAAIstvvsWDZcExW/PMOUony6HzcdMjp3047kH3LTeDYlvfvcEqzHNGyf5vsrjZyniVFQqBNx/Jnaw3u1C9xrsY7JMNzBECWP/TmnLRhm9bKMy0LRk/yHgvQIl3nExQy0QzWCnbjY9Wl7gX51V2NQsBQ=
 jobs:
   include:
-    - stage: build
-      script:
-        - make
-
-    - stage: build and test
-      script:
-        - make compose-file
-        - docker-compose build
-        - docker-compose up -d
-        - docker ps | grep -q quassel-web
-        - docker-compose kill
-        - docker-compose down
-
-    - stage: push latest docker image
-      script:
-        - make
-        - docker login -u="${DOCKER_USERNAME}" -p="${DOCKER_PASSWORD}"
-        - docker tag ${USER}/quassel-web:latest ${DOCKER_USERNAME}/docker-quassel-web:latest
-        - docker push ${DOCKER_USERNAME}/docker-quassel-web:latest
-        - docker logout
-
-    - stage: push version docker image
-      script:
-        - make
-        - docker login -u="${DOCKER_USERNAME}" -p="${DOCKER_PASSWORD}"
-        - docker tag ${USER}/quassel-web:latest ${DOCKER_USERNAME}/docker-quassel-web:${QUASSELWEB_VERSION}
-        - docker push ${DOCKER_USERNAME}/docker-quassel-web:${QUASSELWEB_VERSION}
-        - docker logout
-
-
-#install:
-#  - docker build --tag bodsch/docker-quassel-web .
-#  - docker run --detach --name quassel-web bodsch/docker-quassel-web
-#
-#script:
-#  - docker ps | grep -q quassel-web
-#
-#after_success:
-#  - |
-#    [ "${TRAVIS_BRANCH}" == "master" ] && curl \
-#      --request POST \
-#      --header "Content-Type: application/json"  \
-#      --data '{"source_type":"Branch","source_name":"master"}' \
-#      https://registry.hub.docker.com/u/bodsch/docker-quassel-web/trigger/${DOCKER_HUB_TOKEN}/
-#
+  - stage: build
+    script:
+    - make
+  - stage: build and test
+    script:
+    - make compose-file
+    - docker-compose build
+    - docker-compose up -d
+    - docker ps | grep -q quassel-web
+    - docker-compose kill
+    - docker-compose down
+  - stage: push latest docker image
+    script:
+    - make
+    - docker login -u="${DOCKER_USERNAME}" -p="${DOCKER_PASSWORD}"
+    - docker tag ${USER}/quassel-web:latest ${DOCKER_USERNAME}/docker-quassel-web:latest
+    - docker push ${DOCKER_USERNAME}/docker-quassel-web:latest
+    - docker logout
+  - stage: push version docker image
+    script:
+    - make
+    - docker login -u="${DOCKER_USERNAME}" -p="${DOCKER_PASSWORD}"
+    - docker tag ${USER}/quassel-web:latest ${DOCKER_USERNAME}/docker-quassel-web:${QUASSELWEB_VERSION}
+    - docker push ${DOCKER_USERNAME}/docker-quassel-web:${QUASSELWEB_VERSION}
+    - docker logout
