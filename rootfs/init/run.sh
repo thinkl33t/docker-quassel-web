@@ -7,12 +7,13 @@
 
 export NODE_ENV=${NODE_ENV:-production}
 
-QUASSEL_HOST=${QUASSEL_HOST:-localhost}
-QUASSEL_PORT=${QUASSEL_PORT:-4242}
-FORCE_DEFAULT=${FORCE_DEFAULT:-false}
-WEBSERVER_MODE=${WEBSERVER_MODE:-http}
-WEBSERVER_PORT=${WEBSERVER_PORT:-64080}
-PREFIX_PATH=${PREFIX_PATH:-''}
+QUASSELCORE_HOST=${QUASSELCORE_HOST:-localhost}
+QUASSELCORE_PORT=${QUASSELCORE_PORT:-4242}
+
+QUASSELWEB_FORCE_DEFAULT=${QUASSELWEB_FORCE_DEFAULT:-false}
+QUASSELWEB_WEBSERVER_MODE=${QUASSELWEB_WEBSERVER_MODE:-http}
+QUASSELWEB_WEBSERVER_PORT=${QUASSELWEB_WEBSERVER_PORT:-64080}
+QUASSELWEB_PREFIX_PATH=${QUASSELWEB_PREFIX_PATH:-''}
 
 stdbool() {
 
@@ -28,7 +29,7 @@ check_data_directory() {
 
   for d in $(pwd) $(pwd)/ssl
   do
-    if [ $(whoami) != $(stat -c %G ${d}) ]
+    if [ "$(whoami)" != "$(stat -c %G ${d})" ]
     then
       log_error "wrong permissions for directory."
       log_error "the quassel user can't write into ${d}."
@@ -42,7 +43,7 @@ check_data_directory() {
 #  stat -c %a ${CONFIG_DIR}
 
   set -e
-  touch $(pwd)/ssl/.keep
+  touch "$(pwd)/ssl/.keep"
 }
 
 create_certificate() {
@@ -69,22 +70,22 @@ create_config() {
 
   log_info "create settings-user.js"
 
-  if [ $(stdbool ${FORCE_DEFAULT}) = "y" ]
+  if [ "$(stdbool ${QUASSELWEB_FORCE_DEFAULT})" = "y" ]
   then
-    FORCE_DEFAULT="true"
+    QUASSELWEB_FORCE_DEFAULT="true"
   else
-    FORCE_DEFAULT="false"
+    QUASSELWEB_FORCE_DEFAULT="false"
   fi
 
   cat << EOF > settings-user.js
 
 module.exports = {
   default: {
-    host: '$QUASSEL_HOST',
-    port: $QUASSEL_PORT
+    host: '${QUASSELCORE_HOST}',
+    port: ${QUASSELCORE_PORT}
   },
-  forcedefault: ${FORCE_DEFAULT},
-  prefixpath: '${PREFIX_PATH}'
+  forcedefault: ${QUASSELWEB_FORCE_DEFAULT},
+  prefixpath: '${QUASSELWEB_PREFIX_PATH}'
 };
 
 EOF
@@ -99,9 +100,9 @@ run() {
 
   create_config
 
-  if [ "${WEBSERVER_MODE}" = "https" ]
+  if [ "${QUASSELWEB_WEBSERVER_MODE}" = "https" ]
   then
-    WEBSERVER_PORT=64443
+    QUASSELWEB_WEBSERVER_PORT=64443
   fi
 
 #  Usage: app [options]
@@ -119,9 +120,11 @@ run() {
   node app.js \
     --version
 
+  cat settings-user.js
+
   node app.js \
-    --mode ${WEBSERVER_MODE} \
-    --port ${WEBSERVER_PORT}
+    --mode ${QUASSELWEB_WEBSERVER_MODE} \
+    --port ${QUASSELWEB_WEBSERVER_PORT}
 }
 
 run

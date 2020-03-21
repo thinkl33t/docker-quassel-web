@@ -1,5 +1,5 @@
 
-FROM alpine:3.9 as builder
+FROM alpine:3.11 as builder
 
 ARG VCS_REF
 ARG BUILD_DATE
@@ -21,9 +21,13 @@ RUN \
   echo "export BUILD_DATE=${BUILD_DATE}"              > /etc/profile.d/quassel-web.sh && \
   echo "export BUILD_TYPE=${BUILD_TYPE}"             >> /etc/profile.d/quassel-web.sh
 
+# hadolint ignore=DL3017,DL3018,DL3019
 RUN \
   apk update  --quiet && \
-  apk upgrade --quiet && \
+  apk upgrade --quiet
+
+# hadolint ignore=DL3018,DL3019
+RUN \
   apk add     --quiet \
     build-base \
     curl \
@@ -38,10 +42,11 @@ WORKDIR /data
 RUN \
   git clone https://github.com/magne4000/quassel-webserver.git
 
-WORKDIR quassel-webserver
+WORKDIR /data/quassel-webserver
 
+# hadolint ignore=SC2039,DL4006
 RUN \
-  if [ "${BUILD_TYPE}" == "stable" ] ; then \
+  if [ "${BUILD_TYPE}" = "stable" ] ; then \
     echo "switch to stable Tag v${QUASSELWEB_VERSION}" && \
     git checkout tags/${QUASSELWEB_VERSION} 2> /dev/null && \
     echo "export QUASSELWEB_VERSION=${QUASSELWEB_VERSION}" >> /etc/profile.d/quassel-web.sh ; \
@@ -52,12 +57,14 @@ RUN \
     echo "export QUASSELWEB_VERSION=${version}" >> /etc/profile.d/quassel-web.sh ; \
   fi
 
+# hadolint ignore=DL3016
 RUN \
   npm i -g npm && \
   npm i --package-lock-only && \
-  npm install acorn && \
+  # npm install acorn && \
   npm install --production
 
+# hadolint ignore=DL4006
 RUN \
   npm ls -gp --depth=0 | awk -F/node_modules/ '{print $2}' | grep -vE '^(npm|)$' | xargs -r npm -g rm && \
   rm -rf \
@@ -79,7 +86,7 @@ RUN \
 
 # ---------------------------------------------------------------------------------------
 
-FROM alpine:3.9
+FROM alpine:3.11
 
 ENV \
   TZ='Europe/Berlin'
@@ -87,6 +94,7 @@ ENV \
 COPY --from=builder /etc/profile.d/quassel-web.sh /etc/profile.d/quassel-web.sh
 COPY --from=builder /data/quassel-webserver       /data/quassel-webserver
 
+# hadolint ignore=SC1091,DL3017,DL3018,DL4006
 RUN \
   . /etc/profile && \
   apk update  --quiet --no-cache && \
@@ -109,7 +117,7 @@ RUN \
     --home-dir /data/quassel-webserver \
     --uid 1000 \
     quassel && \
-  chown -Rv quassel:quassel /data/quassel-webserver && \
+  chown -R quassel:quassel /data/quassel-webserver && \
   apk del --quiet --purge .build-deps && \
   rm -rf \
     /tmp/* \

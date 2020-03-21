@@ -1,0 +1,14 @@
+---
+version: '2.1'
+
+services:
+
+  quassel-core:
+    restart: always
+    image: bodsch/docker-quassel-core:latest
+    container_name: quassel-core
+    hostname: quassel-core
+    ports:
+      - 4242:4242
+    volumes:
+      - ../core:/quasselcore/data

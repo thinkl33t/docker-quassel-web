@@ -12,7 +12,7 @@ then
   CURL_OPTS="${CURL_OPTS} --insecure"
 fi
 
-if curl ${CURL_OPTS} ${PROTO}://127.0.0.1:${WEBSERVER_PORT}
+if curl "${CURL_OPTS}" "${PROTO}://127.0.0.1:${WEBSERVER_PORT}"
 then
   exit 0
 fi
