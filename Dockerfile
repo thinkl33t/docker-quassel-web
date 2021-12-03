@@ -1,5 +1,5 @@
 
-FROM alpine:3.11 as builder
+FROM alpine:3.15 as builder
 
 ARG VCS_REF
 ARG BUILD_DATE
@@ -32,10 +32,10 @@ RUN \
     build-base \
     curl \
     git \
-    nodejs-npm \
+    npm \
     nodejs \
     openssl \
-    python
+    python3
 
 WORKDIR /data
 
@@ -86,7 +86,7 @@ RUN \
 
 # ---------------------------------------------------------------------------------------
 
-FROM alpine:3.11
+FROM alpine:3.15
 
 ENV \
   TZ='Europe/Berlin'
